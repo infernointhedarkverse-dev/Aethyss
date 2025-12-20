@@ -1,18 +1,19 @@
 package com.aethyss
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val text = TextView(this)
-        text.text = "Aethyss APK Build Successful"
-        text.textSize = 18f
+        val textView = TextView(this).apply {
+            text = "Aethyss is running"
+            textSize = 18f
+        }
 
-        setContentView(text)
+        setContentView(textView)
     }
 }
