@@ -7,45 +7,88 @@ import androidx.appcompat.app.AppCompatActivity
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
-import kotlin.concurrent.thread
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
-    private val backendUrl = "http://10.0.2.2:8000/health" // emulator / CI-safe
+    private lateinit var statusView: TextView
+
+    private val backendUrl = "http://10.0.2.2:8000/health"
+
+    private val executor = Executors.newSingleThreadExecutor()
+    private val client = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val textView = TextView(this)
-        textView.text = "Aethyss starting..."
-        setContentView(textView)
+        statusView = TextView(this)
+        statusView.textSize = 18f
+        statusView.text = savedInstanceState?.getString("status")
+            ?: "Aethyss initializing…"
 
-        checkBackend(textView)
+        setContentView(statusView)
+
+        if (savedInstanceState == null) {
+            checkBackend()
+        }
     }
 
-    private fun checkBackend(textView: TextView) {
-        val client = OkHttpClient()
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("status", statusView.text.toString())
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("Aethyss", "onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("Aethyss", "onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("Aethyss", "onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("Aethyss", "onStop")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        executor.shutdown()
+        Log.d("Aethyss", "onDestroy")
+    }
+
+    private fun checkBackend() {
+        statusView.text = "Checking backend…"
 
         val request = Request.Builder()
             .url(backendUrl)
             .build()
 
-        thread {
+        executor.execute {
             try {
                 val response = client.newCall(request).execute()
-                val body = response.body?.string() ?: "Empty response"
+                val body = response.body?.string() ?: "No response"
 
                 runOnUiThread {
-                    textView.text = "Backend OK:\n$body"
+                    statusView.text = "Backend reachable\n\n$body"
                 }
 
             } catch (e: IOException) {
-                Log.e("Aethyss", "Backend unreachable", e)
+                Log.e("Aethyss", "Backend check failed", e)
 
                 runOnUiThread {
-                    textView.text = "Backend offline\nApp still stable"
+                    statusView.text =
+                        "Backend offline\n\nApp is stable and running"
                 }
             }
         }
     }
 }
+
