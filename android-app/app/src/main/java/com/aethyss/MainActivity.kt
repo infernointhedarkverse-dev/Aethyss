@@ -1,19 +1,24 @@
 package com.aethyss
 
 import android.os.Bundle
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.aethyss.ui.theme.AethyssTheme
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val textView = TextView(this).apply {
-            text = "Aethyss is running"
-            textSize = 18f
+        try {
+            setContent {
+                AethyssTheme {
+                    App()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Fatal UI crash", e)
         }
-
-        setContentView(textView)
     }
 }
