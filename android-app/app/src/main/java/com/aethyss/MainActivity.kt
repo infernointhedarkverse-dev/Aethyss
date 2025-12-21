@@ -1,24 +1,12 @@
 package com.aethyss
 
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import com.aethyss.ui.theme.AethyssTheme
+import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        try {
-            setContent {
-                AethyssTheme {
-                    App()
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("MainActivity", "Fatal UI crash", e)
-        }
+        setContentView(R.layout.activity_main)
     }
 }
