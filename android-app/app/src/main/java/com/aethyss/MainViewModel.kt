@@ -1,24 +1,25 @@
 package com.aethyss
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import retrofit2.await
 
 class MainViewModel : ViewModel() {
 
-    private val _response = MutableStateFlow("")
-    val response: StateFlow<String> = _response
+    private val _messages = MutableLiveData<List<String>>(emptyList())
+    val messages: LiveData<List<String>> = _messages
 
     fun sendMessage(message: String) {
         viewModelScope.launch {
             try {
-                val reply = Network.api.chat(ChatRequest(message))
-                _response.value = reply.reply
+                val response = Network.api.chat(ChatRequest(message)).await()
+                _messages.value = _messages.value.orEmpty() + response.reply
             } catch (e: Exception) {
-                _response.value = "Backend offline"
+                _messages.value = _messages.value.orEmpty() + "Error: ${e.message}"
             }
         }
     }
-}
+}	

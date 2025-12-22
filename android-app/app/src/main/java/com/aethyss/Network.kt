@@ -4,7 +4,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object Network {
-
     val api: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(Config.BASE_URL)
