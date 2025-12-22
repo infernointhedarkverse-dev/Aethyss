@@ -1,105 +1,65 @@
 package com.aethyss
 
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
-import java.io.IOException
-import java.util.concurrent.Executors
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
-class MainActivity : AppCompatActivity() {
-
-    // CHANGE THIS to your backend later if needed
-    private val backendUrl = "http://10.0.2.2:8000/chat"
-
-    private val executor = Executors.newSingleThreadExecutor()
-    private val client = OkHttpClient()
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Layout
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
+        setContent {
+            MaterialTheme {
+                ChatScreen()
+            }
+        }
+    }
+}
+
+@Composable
+fun ChatScreen(viewModel: MainViewModel = viewModel()) {
+    var input by remember { mutableStateOf("") }
+    val messages by viewModel.messages.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            messages.forEach {
+                Text(text = it)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
 
-        val scroll = ScrollView(this)
-        val chatView = TextView(this).apply {
-            textSize = 16f
-            text = "Aethyss Chat Ready\n\n"
-        }
-        scroll.addView(chatView)
-
-        val input = EditText(this).apply {
-            hint = "Type your message"
-        }
-
-        val send = Button(this).apply {
-            text = "Send"
-        }
-
-        root.addView(scroll,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+        Row {
+            TextField(
+                value = input,
+                onValueChange = { input = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Type message") }
             )
-        )
-        root.addView(input)
-        root.addView(send)
 
-        setContentView(root)
+            Spacer(modifier = Modifier.width(8.dp))
 
-        send.setOnClickListener {
-            val message = input.text.toString().trim()
-            if (message.isNotEmpty()) {
-                input.setText("")
-                chatView.append("You: $message\n")
-                sendMessage(message, chatView)
+            Button(onClick = {
+                viewModel.sendMessage(input)
+                input = ""
+            }) {
+                Text("Send")
             }
         }
-    }
-
-    private fun sendMessage(message: String, chatView: TextView) {
-        val json = JSONObject()
-        json.put("message", message)
-
-        val body = json.toString()
-            .toRequestBody("application/json".toMediaType())
-
-        val request = Request.Builder()
-            .url(backendUrl)
-            .post(body)
-            .build()
-
-        executor.execute {
-            try {
-                val response = client.newCall(request).execute()
-                val reply = response.body?.string() ?: "No response"
-
-                runOnUiThread {
-                    chatView.append("Bot: $reply\n\n")
-                }
-
-            } catch (e: IOException) {
-                runOnUiThread {
-                    chatView.append(
-                        "Bot: (backend unreachable)\n\n"
-                    )
-                }
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        executor.shutdown()
     }
 }
 
