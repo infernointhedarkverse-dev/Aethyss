@@ -1,3 +1,13 @@
-# Aethyss
+# Aethyss Backend
 
-This is the Aethyss AI chatbot project — inspired by EmochiApp but fully reworked for modern Android + backend.
+Cloud FastAPI backend for the Aethyss Android app.
+
+## Endpoints
+
+- GET /health
+- POST /chat
+
+This backend is deployed on a 64-bit cloud server.
+Do NOT run in Termux or on-device.
+
+
