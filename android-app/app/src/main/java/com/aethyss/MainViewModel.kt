@@ -1,25 +1,25 @@
 package com.aethyss
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import retrofit2.await
 
 class MainViewModel : ViewModel() {
 
-    private val _messages = MutableLiveData<List<String>>(emptyList())
-    val messages: LiveData<List<String>> = _messages
-
-    fun sendMessage(message: String) {
+    fun sendMessage(
+        message: String,
+        onResult: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch {
             try {
-                val response = Network.api.chat(ChatRequest(message)).await()
-                _messages.value = _messages.value.orEmpty() + response.reply
+                val response = Network.api.chat(
+                    ChatRequest(message)
+                )
+                onResult(response)
             } catch (e: Exception) {
-                _messages.value = _messages.value.orEmpty() + "Error: ${e.message}"
+                onError(e.message ?: "Unknown error")
             }
         }
     }
-}	
+}
