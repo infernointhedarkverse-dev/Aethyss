@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="Theme.Aethyss" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Safe base theme -->
+        <!-- Customize if needed -->
     </style>
+
 </resources>
