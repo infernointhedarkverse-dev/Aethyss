@@ -1,40 +1,70 @@
 package com.aethyss
 
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var viewModel: MainViewModel
-    private lateinit var messageInput: EditText
-    private lateinit var sendButton: Button
-    private lateinit var messagesView: TextView
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-
-        messageInput = findViewById(R.id.message_input)
-        sendButton = findViewById(R.id.send_button)
-        messagesView = findViewById(R.id.messages_view)
-
-        sendButton.setOnClickListener {
-            val msg = messageInput.text.toString()
-            if (msg.isNotEmpty()) {
-                viewModel.sendMessage(msg)
-                messageInput.text.clear()
-            }
-        }
-
-        viewModel.messages.observe(this) { msgs ->
-            messagesView.text = msgs.joinToString("\n")
+        setContent {
+            AethyssScreen()
         }
     }
 }
 
+@Composable
+fun AethyssScreen(viewModel: MainViewModel = viewModel()) {
+    var input by remember { mutableStateOf("") }
+    var response by remember { mutableStateOf("Waiting for input…") }
+    var loading by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(text = "Aethyss", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = response)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = input,
+            onValueChange = { input = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Enter message") }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                loading = true
+                viewModel.sendMessage(
+                    message = input,
+                    onResult = {
+                        response = it
+                        loading = false
+                    },
+                    onError = {
+                        response = "Error: $it"
+                        loading = false
+                    }
+                )
+            },
+            enabled = !loading
+        ) {
+            Text(if (loading) "Sending…" else "Send")
+        }
+    }
+}
