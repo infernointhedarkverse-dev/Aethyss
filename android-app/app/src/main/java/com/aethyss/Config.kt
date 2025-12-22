@@ -1,3 +1,4 @@
 object Config {
-    const val BASE_URL = "https://aethyss.onrender.com"
+    const val BASE_URL = "https://aethyss.onrender.com" // Render URL
 }
+
