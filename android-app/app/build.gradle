@@ -9,22 +9,18 @@ android {
 
     defaultConfig {
         applicationId "com.aethyss"
-        minSdk 21
+        minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
     }
 
-    buildTypes {
-        debug {
-            debuggable true
-        }
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile(
-                    'proguard-android-optimize.txt'),
-                    'proguard-rules.pro'
-        }
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.11'
     }
 
     compileOptions {
@@ -35,35 +31,11 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
-
-    buildFeatures {
-        compose true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.11'
-    }
 }
 
 dependencies {
-
-    // Core
-    implementation "androidx.core:core-ktx:1.13.1"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.6"
-
-    // Compose BOM
-    implementation platform("androidx.compose:compose-bom:2024.10.00")
-
-    // Compose UI
-    implementation "androidx.compose.ui:ui"
-    implementation "androidx.compose.ui:ui-tooling-preview"
-
-    // 🔥 MATERIAL 3 (THIS FIXES YOUR ERROR)
-    implementation "androidx.compose.material3:material3"
-
-    // Activity for Compose
-    implementation "androidx.activity:activity-compose:1.9.3"
-
-    // Debug
-    debugImplementation "androidx.compose.ui:ui-tooling"
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.activity:activity-compose:1.9.0'
+    implementation 'androidx.compose.ui:ui:1.6.7'
+    implementation 'androidx.compose.material3:material3:1.2.1'
 }
