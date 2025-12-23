@@ -2,7 +2,9 @@ package com.aethyss
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
@@ -13,12 +15,16 @@ class MainViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
-                val response = Network.api.chat(
-                    ChatRequest(message)
-                )
-                onResult(response)
+                val response = withContext(Dispatchers.IO) {
+                    Network.api.chat(
+                        ChatRequest(message)
+                    )
+                }
+
+                onResult(response.toString())
+
             } catch (e: Exception) {
-                onError(e.message ?: "Unknown error")
+                onError(e.localizedMessage ?: "Network error")
             }
         }
     }
