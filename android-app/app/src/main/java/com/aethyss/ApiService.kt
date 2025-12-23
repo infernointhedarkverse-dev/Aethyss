@@ -12,5 +12,5 @@ interface ApiService {
     @POST("/chat")
     suspend fun chat(
         @Body request: ChatRequest
-    ): ChatResponse
+    ): String  // Changed from ChatResponse to String
 }
