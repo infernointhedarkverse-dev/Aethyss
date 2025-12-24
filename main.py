@@ -1,8 +1,10 @@
 import os
-import google.generativeai as genai
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+
+from google import genai
+from google.genai import types
 
 # =========================
 # Gemini API Configuration
@@ -11,17 +13,16 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY not set")
 
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
-# v1beta-safe model (this one WORKS)
-model = genai.GenerativeModel("models/gemini-1.0-pro")
+MODEL_NAME = "gemini-1.5-flash"
 
 # =========================
 # FastAPI App
 # =========================
 app = FastAPI(
     title="Aethyss Cloud Backend",
-    version="2.0.0",
+    version="3.0.0",
 )
 
 app.add_middleware(
@@ -55,7 +56,14 @@ def health():
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
     try:
-        response = model.generate_content(req.message)
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=req.message,
+            config=types.GenerateContentConfig(
+                temperature=0.7,
+                max_output_tokens=512,
+            ),
+        )
         return {"reply": response.text}
     except Exception as e:
         return {"reply": f"AI error: {str(e)}"}
