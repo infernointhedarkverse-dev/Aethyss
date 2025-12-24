@@ -1,13 +1,28 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+import os
+import google.generativeai as genai
 
+# =========================
+# Gemini Configuration
+# =========================
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    raise RuntimeError("GEMINI_API_KEY not set in environment variables")
+
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel("gemini-pro")
+
+# =========================
+# FastAPI App
+# =========================
 app = FastAPI(
     title="Aethyss Cloud Backend",
-    version="1.0.0",
+    version="2.0.0",
 )
 
-# Allow Android app to connect
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,12 +31,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# =========================
+# Models
+# =========================
 class ChatRequest(BaseModel):
     message: str
 
 class ChatResponse(BaseModel):
     reply: str
 
+# =========================
+# Routes
+# =========================
 @app.get("/")
 def root():
     return {"status": "Aethyss backend online"}
@@ -32,14 +53,10 @@ def health():
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
-    # TEMP AI logic (safe, stable)
-    user_msg = req.message.lower()
-
-    if "hello" in user_msg:
-        reply = "Hello. Aethyss is online and listening."
-    elif "who are you" in user_msg:
-        reply = "I am Aethyss, your AI companion."
-    else:
-        reply = f"You said: {req.message}"
-
-    return {"reply": reply}
+    try:
+        # Generate AI response using Gemini
+        response = model.generate_content(req.message)
+        return {"reply": response.text}
+    except Exception as e:
+        # Return a safe error message instead of crashing
+        return {"reply": f"AI error: {str(e)}"}
