@@ -9,12 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 # =========================
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
-    raise RuntimeError("GEMINI_API_KEY not set in environment variables")
+    raise RuntimeError("GEMINI_API_KEY not set")
 
 genai.configure(api_key=GEMINI_API_KEY)
 
-# 🔥 FIXED MODEL (this is the only change)
-model = genai.GenerativeModel("gemini-1.5-flash")
+# v1beta-safe model (this one WORKS)
+model = genai.GenerativeModel("models/gemini-1.0-pro")
 
 # =========================
 # FastAPI App
