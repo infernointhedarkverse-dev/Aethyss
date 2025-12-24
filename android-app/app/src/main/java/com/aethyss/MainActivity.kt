@@ -3,6 +3,7 @@ package com.aethyss
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
@@ -22,15 +23,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AethyssAppScreen(mainViewModel: MainViewModel = viewModel()) {
-    var inputText by remember { mutableStateOf("hi") } // pre-fill for test
+    var inputText by remember { mutableStateOf("") }
     var chatOutput by remember { mutableStateOf("Aethyss is running") }
 
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier
-                .padding(16.dp)
-                .fillMaxSize()) {
-
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize()
+            ) {
                 Text(text = chatOutput)
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -51,26 +53,22 @@ fun AethyssAppScreen(mainViewModel: MainViewModel = viewModel()) {
                             .padding(horizontal = 8.dp, vertical = 16.dp)
                     )
 
-                    Button(onClick = {
-                        if (inputText.isNotBlank()) {
-                            try {
+                    Button(
+                        onClick = {
+                            if (inputText.isNotBlank()) {
                                 mainViewModel.sendMessage(
                                     message = inputText,
                                     onResult = { response ->
                                         chatOutput = response
-                                        inputText = "" // clear after send
+                                        inputText = ""
                                     },
                                     onError = { error ->
-                                        chatOutput = "Error: $error"
-                                        println("DEBUG_ERROR: $error")
+                                        chatOutput = error
                                     }
                                 )
-                            } catch (e: Exception) {
-                                chatOutput = "Crash prevented: ${e.localizedMessage}"
-                                println("DEBUG_CRASH: ${e.stackTraceToString()}")
                             }
                         }
-                    }) {
+                    ) {
                         Text("Send")
                     }
                 }
