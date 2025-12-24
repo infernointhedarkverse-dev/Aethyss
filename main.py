@@ -12,7 +12,9 @@ if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY not set in environment variables")
 
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-pro")
+
+# 🔥 FIXED MODEL (this is the only change)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # =========================
 # FastAPI App
