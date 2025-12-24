@@ -1,0 +1,17 @@
+workflows:
+  android-workflow:
+    name: Build Android APK
+    max_build_duration: 60
+    environment:
+      vars:
+        ANDROID_HOME: /usr/local/android-sdk
+    scripts:
+      - name: Checkout code
+        script: |
+          echo "Code already checked out by Codemagic"
+      - name: Build APK
+        script: |
+          cd android-app
+          ./gradlew assembleDebug
+    artifacts:
+      - android-app/app/build/outputs/**/*.apk
