@@ -1,14 +1,13 @@
+import os
+import google.generativeai as genai
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-import os
-import google.generativeai as genai
 
 # =========================
-# Gemini Configuration
+# Gemini API Configuration
 # =========================
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY not set in environment variables")
 
@@ -32,7 +31,7 @@ app.add_middleware(
 )
 
 # =========================
-# Models
+# Data Models
 # =========================
 class ChatRequest(BaseModel):
     message: str
@@ -54,9 +53,7 @@ def health():
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
     try:
-        # Generate AI response using Gemini
         response = model.generate_content(req.message)
         return {"reply": response.text}
     except Exception as e:
-        # Return a safe error message instead of crashing
         return {"reply": f"AI error: {str(e)}"}
