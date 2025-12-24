@@ -11,8 +11,10 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY not set")
 
+# The new SDK handles the 'models/' prefix internally. 
+# Just use the name of the model.
 client = genai.Client(api_key=GEMINI_API_KEY)
-MODEL_NAME = "models/gemini-1.5-flash"
+MODEL_NAME = "gemini-1.5-flash" 
 
 # =========================
 # FastAPI App
@@ -53,10 +55,14 @@ def health():
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
     try:
+        # The new SDK uses client.models.generate_content
         response = client.models.generate_content(
             model=MODEL_NAME,
             contents=req.message
         )
+        # Ensure we return the text correctly
         return {"reply": response.text}
     except Exception as e:
+        # This will now catch and show if there's an API Key issue
         return {"reply": f"AI error: {str(e)}"}
+
