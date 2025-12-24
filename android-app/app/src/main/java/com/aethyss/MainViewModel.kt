@@ -16,12 +16,10 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    Network.api.chat(
-                        ChatRequest(message)
-                    )
+                    Network.api.chat(ChatRequest(message))
                 }
 
-                onResult(response.toString())
+                onResult(response.reply)
 
             } catch (e: Exception) {
                 onError(e.localizedMessage ?: "Network error")
