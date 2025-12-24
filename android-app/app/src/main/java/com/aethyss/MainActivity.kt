@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
 fun AethyssAppScreen(mainViewModel: MainViewModel = viewModel()) {
     var inputText by remember { mutableStateOf("") }
     var chatOutput by remember { mutableStateOf("Aethyss is running") }
+    var isSending by remember { mutableStateOf(false) }
 
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -46,30 +47,34 @@ fun AethyssAppScreen(mainViewModel: MainViewModel = viewModel()) {
                             .padding(end = 8.dp)
                             .height(56.dp)
                             .border(
-                                1.dp,
-                                MaterialTheme.colorScheme.primary,
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.primary,
                                 shape = MaterialTheme.shapes.small
                             )
                             .padding(horizontal = 8.dp, vertical = 16.dp)
                     )
 
                     Button(
+                        enabled = !isSending,
                         onClick = {
                             if (inputText.isNotBlank()) {
+                                isSending = true
                                 mainViewModel.sendMessage(
                                     message = inputText,
                                     onResult = { response ->
                                         chatOutput = response
                                         inputText = ""
+                                        isSending = false
                                     },
                                     onError = { error ->
                                         chatOutput = error
+                                        isSending = false
                                     }
                                 )
                             }
                         }
                     ) {
-                        Text("Send")
+                        Text(if (isSending) "Sending..." else "Send")
                     }
                 }
             }

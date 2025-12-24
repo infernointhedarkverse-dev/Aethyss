@@ -13,6 +13,7 @@ data class ChatResponse(
 
 interface ApiService {
 
+    // POST request to the /chat endpoint
     @POST("/chat")
     suspend fun chat(
         @Body request: ChatRequest
