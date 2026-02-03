@@ -1,48 +1,168 @@
-dependencies {
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0-alpha02'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+package com.aethyss.ui
 
-    // Compose BOM (locks versions correctly)
-    implementation platform('androidx.compose:compose-bom:2024.02.00')
-    androidTestImplementation platform('androidx.compose:compose-bom:2024.02.00')
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.aethyss.data.ChatMessage
+import com.aethyss.viewmodel.ChatViewModel
+import kotlinx.coroutines.launch
 
-    // Core Compose
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    implementation 'androidx.compose.runtime:runtime-saveable'
+@Composable
+fun ChatScreen(
+    modifier: Modifier = Modifier,
+    viewModel: ChatViewModel = viewModel()
+) {
+    val messages by viewModel.messages.collectAsState()
+    val isSending by viewModel.isSending.collectAsState()
+    val error by viewModel.error.collectAsState()
 
-    // Material 3
-    implementation 'androidx.compose.material3:material3'
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
-    // Icons (CRITICAL)
-    implementation 'androidx.compose.material:material-icons-extended'
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.lastIndex)
+        }
+    }
 
-    // Insets / IME
-    implementation 'androidx.compose.foundation:foundation-layout'
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            SmallTopAppBar(title = { Text("Aethyss") })
+        },
+        bottomBar = {
+            ChatInputBar(
+                isSending = isSending,
+                onSend = viewModel::sendMessage
+            )
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            if (messages.isEmpty()) {
+                Text(
+                    text = "Start the conversation — ask anything.",
+                    modifier = Modifier.align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(12.dp)
+                ) {
+                    items(messages) { msg ->
+                        MessageBubble(msg)
+                        Spacer(Modifier.height(6.dp))
+                    }
+                    item { Spacer(Modifier.height(64.dp)) }
+                }
+            }
 
-    // Activity + Lifecycle
-    implementation 'androidx.activity:activity-compose:1.8.2'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+            error?.let {
+                AssistChip(
+                    onClick = {},
+                    label = { Text(it) },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 80.dp)
+                )
+            }
 
-    // Navigation (NavGraph fix — for next message)
-    implementation 'androidx.navigation:navigation-compose:2.7.7'
+            if (isSending) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                    strokeWidth = 2.dp
+                )
+            }
+        }
+    }
+}
 
-    // Networking
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.google.code.gson:gson:2.10.1'
+@Composable
+fun ChatInputBar(
+    isSending: Boolean,
+    onSend: (String) -> Unit
+) {
+    var text by rememberSaveable { mutableStateOf("") }
 
-    // Coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    Surface(tonalElevation = 3.dp) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .imePadding()   // ✅ SAFE replacement
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextField(
+                value = text,
+                onValueChange = { text = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Type a message…") },
+                maxLines = 4
+            )
 
-    debugImplementation 'androidx.compose.ui:ui-tooling'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+            IconButton(
+                enabled = text.isNotBlank() && !isSending,
+                onClick = {
+                    onSend(text.trim())
+                    text = ""
+                }
+            ) {
+                Icon(Icons.Default.Send, contentDescription = "Send")
+            }
+        }
+    }
+}
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+@Composable
+fun MessageBubble(message: ChatMessage) {
+    val isUser = message.isUser
+    val bg = if (isUser)
+        MaterialTheme.colorScheme.primary
+    else
+        MaterialTheme.colorScheme.surfaceVariant
+
+    val fg = if (isUser)
+        MaterialTheme.colorScheme.onPrimary
+    else
+        MaterialTheme.colorScheme.onSurfaceVariant
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
+    ) {
+        Surface(
+            color = bg,
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.widthIn(max = 280.dp)
+        ) {
+            Text(
+                text = message.text,
+                color = fg,
+                fontSize = 15.sp,
+                modifier = Modifier.padding(12.dp)
+            )
+        }
+    }
 }
