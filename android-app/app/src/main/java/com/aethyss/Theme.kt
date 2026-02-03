@@ -1,8 +1,7 @@
 package com.aethyss.ui.theme
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 
 private val LightColors = lightColorScheme(
@@ -15,7 +14,8 @@ private val LightColors = lightColorScheme(
     surfaceVariant = md_theme_light_surfaceVariant,
     onSurfaceVariant = md_theme_light_onSurfaceVariant,
     error = md_theme_light_error,
-    onError = md_theme_light_onError
+    onError = md_theme_light_onError,
+    outline = md_theme_light_outline
 )
 
 private val DarkColors = darkColorScheme(
@@ -28,17 +28,20 @@ private val DarkColors = darkColorScheme(
     surfaceVariant = md_theme_dark_surfaceVariant,
     onSurfaceVariant = md_theme_dark_onSurfaceVariant,
     error = md_theme_dark_error,
-    onError = md_theme_dark_onError
+    onError = md_theme_dark_onError,
+    outline = md_theme_dark_outline
 )
 
 @Composable
 fun AethyssTheme(
+    useDark: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colors = LightColors // simple: always use light by default (system support can be added)
+    val colors = if (useDark) DarkColors else LightColors
+
     MaterialTheme(
         colorScheme = colors,
-        typography = androidx.compose.material3.Typography(),
+        typography = Typography(),
         content = content
     )
 }
