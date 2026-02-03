@@ -36,15 +36,14 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun AethyssTheme(
-    useDark: Boolean = isSystemInDarkTheme(),
+    useDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colors = if (useDark) DarkColors else LightColors
+    val colors = if (useDarkTheme) DarkColors else LightColors
 
     MaterialTheme(
         colorScheme = colors,
+        typography = Typography,
         content = content
     )
 }
-
-
