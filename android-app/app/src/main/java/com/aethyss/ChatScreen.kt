@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.layout.navigationBarsWithImePadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -110,7 +109,8 @@ fun ChatInputBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsWithImePadding()
+                .imePadding()              // ✅ replacement
+                .navigationBarsPadding()  // ✅ replacement
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
